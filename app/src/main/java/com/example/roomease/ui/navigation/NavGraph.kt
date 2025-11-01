@@ -36,7 +36,7 @@ fun AppNavHost() {
             userViewModel.loadUserDetails(userId)
         }
     }
-    val isUserDetailsProvider = userViewModel.userHostelDetails != null
+    val isUserDetailsProvided = userViewModel.userHostelDetails != null
 
     // Start destination:
     // • If not signed in => Login (SignInScreen)
@@ -44,7 +44,7 @@ fun AppNavHost() {
     // • Otherwise, go to Home.
     val startDestination = when {
         !isUserLoggedIn -> Login
-        isUserLoggedIn && !isUserDetailsProvider -> Login2
+        isUserLoggedIn && !isUserDetailsProvided -> Login2
         else -> Home
     }
 

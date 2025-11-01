@@ -1,6 +1,8 @@
 package com.example.roomease.utils
 
+import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.provider.Settings
 import android.util.Log
@@ -44,14 +46,21 @@ class GoogleSignInUtils : KoinComponent {
             userViewModel: UserViewModel
         ) {
             val credentialManager = CredentialManager.create(context)
+            val activity = context.findActivity()
 
+            val permissiveReq = GetCredentialRequest.Builder()
+                .addCredentialOption(getCredentialOptions(context, authorizedOnly = false))
+                .build()
+
+/*
             val request = GetCredentialRequest.Builder()
                 .addCredentialOption(getCredentialOptions(context))
                 .build()
+*/
 
             scope.launch {
                 try {
-                    val result = credentialManager.getCredential(context, request)
+                    val result = credentialManager.getCredential(activity, permissiveReq)
                     when (result.credential) {
                         is CustomCredential -> {
                             if (result.credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
@@ -104,8 +113,9 @@ class GoogleSignInUtils : KoinComponent {
                             /* Handle other credential types if needed */
                         }
                     }
-                } catch (_: NoCredentialException) {
+                } catch (e: NoCredentialException) {
                     launcher?.launch(getIntent())
+                    Log.w("GoogleSignInUtils", "NoCredentialException: ${e.message}")
                 } catch (e: GetCredentialException) {
                     e.printStackTrace()
                 }
@@ -147,12 +157,20 @@ class GoogleSignInUtils : KoinComponent {
             }
         }
 
-        private fun getCredentialOptions(context: Context): CredentialOption {
+        private fun getCredentialOptions(context: Context, authorizedOnly: Boolean): CredentialOption {
             return GetGoogleIdOption.Builder()
-                .setFilterByAuthorizedAccounts(false)
+                .setFilterByAuthorizedAccounts(authorizedOnly)
                 .setAutoSelectEnabled(false)
                 .setServerClientId(context.getString(R.string.web_client_id))
                 .build()
         }
+    }
+}
+
+private tailrec fun Context.findActivity(): Activity {
+    return when (this) {
+        is Activity -> this
+        is ContextWrapper -> baseContext.findActivity()
+        else -> error("Context is not an Activity")
     }
 }

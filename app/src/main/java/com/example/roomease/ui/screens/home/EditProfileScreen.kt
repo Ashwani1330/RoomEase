@@ -20,6 +20,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,7 +42,7 @@ fun EditProfileScreen(
 ) {
     val userViewModel: UserViewModel = getViewModel()
     // Retrieve current user details.
-    val currentDetails = userViewModel.userHostelDetails
+    val currentDetails by userViewModel.userHostelDetails.collectAsState()
 
     // Initialize state with current details or default values.
     var phone by remember { mutableStateOf(currentDetails?.phoneNumber ?: "") }
